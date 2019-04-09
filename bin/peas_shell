@@ -37,6 +37,23 @@ class PanSensorShell(cmd.Cmd):
 ##################################################################################################
 # Generic Methods
 ##################################################################################################
+    def clean_buffer(self):
+	    serial_connection = self.environment.serial_readers[relay_info['board']]['reader']
+
+	    try:
+		    serial_connection.ser.reset_input_buffer()
+		    serial_connection.write("{},9".format(relay_info['pin'])) #not sure what this line of code does.
+	    except Exception as e:
+		    print("Unable to reset Input Buffer\n")
+		    print(e)
+
+	    try:
+		    serial_connection.ser.reset_output_buffer()
+		    serial_connection.write("{},9".format(relay_info['pin'])) #not sure what this line of code does.
+	    except Exception as e:
+		    print("Unable to reset output buffer\n")
+		    print(e)
+
 
     def do_status(self, *arg):
         """ Get the entire system status and print it pretty like! """
@@ -202,17 +219,9 @@ class PanSensorShell(cmd.Cmd):
             relay_lookup = powerboard_relay_lookup
         else:
             relay_lookup = telemetry_relay_lookup
-
-        try:
-            relay_info = relay_lookup[relay]
-            serial_connection = self.environment.serial_readers[relay_info['board']]['reader']
-
-            serial_connection.ser.flushInput()
-            serial_connection.write("{},9".format(relay_info['pin']))
-        except Exception as e:
-            print_warning("Problem toggling relay {}".format(relay))
-            print_warning(e)
-
+        
+        clean_buffer()
+        
     def complete_toggle_relay(self, text, line, begidx, endidx):
         """Provide completions for relay names."""
         if 'power_board' in self.environment.serial_readers:
